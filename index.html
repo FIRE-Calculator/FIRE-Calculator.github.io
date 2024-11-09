@@ -25,21 +25,23 @@
       <input type="number" id="initial" value="200000" required /><br />
 
       <label for="income">Annual Income:</label>
-      <input type="number" id="income" value="100000" required /><br />
+      <input type="number" id="income" value="120000" required /><br />
 
       <label for="expenses">Annual Expenses:</label>
       <input type="number" id="expenses" value="60000" required /><br />
 
       <label for="years">Duration (years):</label>
-      <input type="number" id="years" value="10" required /><br />
+      <input type="number" id="years" value="20" required /><br />
 
       <label for="rate">Expected Rate of Return (%):</label>
-      <input type="number" id="rate" step="0.1" value="10" required /><br />
+      <input type="number" id="rate" step="0.1" value="7" required /><br />
     </form>
 
-    <hr style="border-top: 1px solid lightgray;">
-    <br> <div id="result"></div>
-    <br> <canvas id="myChart" width="400" height="200"></canvas>
+    <hr style="border-top: 1px solid lightgray" />
+    <br />
+    <div id="result"></div>
+    <br />
+    <canvas id="myChart" width="400" height="200"></canvas>
 
     <script>
       let myChart;
@@ -52,14 +54,20 @@
         const rate = parseFloat(document.getElementById("rate").value) / 100;
 
         let total = initial;
+        let yearsToFI = -1;
         const yearlyData = [total];
         for (let i = 1; i <= years; i++) {
           total = total * (1 + rate) + (income - expenses);
           yearlyData.push(total);
+
+          // Check if 4% of total is equal to or higher than expenses
+          if (yearsToFI === -1 && total * 0.04 >= expenses) {
+            yearsToFI = i;
+          }
         }
 
         document.getElementById("result").innerHTML =
-          `Estimated amount after ${years} years: $${total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+          `Years to financial independence: ${yearsToFI}. Estimated amount after ${years} years: $${total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
         updateChart(yearlyData);
       }
