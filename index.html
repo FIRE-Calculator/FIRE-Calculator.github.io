@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FIRE Calculator</title>
@@ -11,8 +12,7 @@
         margin: 0 auto;
         padding: 20px;
       }
-      input,
-      button {
+      input {
         margin: 10px 0;
         padding: 5px;
       }
@@ -35,33 +35,79 @@
 
       <label for="rate">Expected Rate of Return (%):</label>
       <input type="number" id="rate" step="0.1" value="10" required /><br />
-
-      <button type="submit">Calculate</button>
     </form>
-    <div id="result"></div>
+
+    <hr style="border-top: 1px solid lightgray;">
+    <br> <div id="result"></div>
+    <br> <canvas id="myChart" width="400" height="200"></canvas>
 
     <script>
-      document
-        .getElementById("calculator-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
+      let myChart;
 
-          const initial = parseFloat(document.getElementById("initial").value);
-          const income = parseFloat(document.getElementById("income").value);
-          const expenses = parseFloat(
-            document.getElementById("expenses").value,
-          );
-          const years = parseInt(document.getElementById("years").value);
-          const rate = parseFloat(document.getElementById("rate").value) / 100;
+      function calculateAndUpdate() {
+        const initial = parseFloat(document.getElementById("initial").value);
+        const income = parseFloat(document.getElementById("income").value);
+        const expenses = parseFloat(document.getElementById("expenses").value);
+        const years = parseInt(document.getElementById("years").value);
+        const rate = parseFloat(document.getElementById("rate").value) / 100;
 
-          let total = initial;
-          for (let i = 0; i < years; i++) {
-            total = total * (1 + rate) + (income - expenses);
-          }
+        let total = initial;
+        const yearlyData = [total];
+        for (let i = 1; i <= years; i++) {
+          total = total * (1 + rate) + (income - expenses);
+          yearlyData.push(total);
+        }
 
-          document.getElementById("result").innerHTML =
-            `Estimated amount after ${years} years: $${total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        document.getElementById("result").innerHTML =
+          `Estimated amount after ${years} years: $${total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+        updateChart(yearlyData);
+      }
+
+      function updateChart(data) {
+        const ctx = document.getElementById("myChart").getContext("2d");
+
+        if (myChart) {
+          myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: Array.from({ length: data.length }, (_, i) => i),
+            datasets: [
+              {
+                label: "Net Worth",
+                data: data,
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value, index, values) {
+                    return "$" + value.toLocaleString();
+                  },
+                },
+              },
+            },
+          },
         });
+      }
+
+      // Add event listeners to all inputs
+      const inputs = document.querySelectorAll("#calculator-form input");
+      inputs.forEach((input) => {
+        input.addEventListener("input", calculateAndUpdate);
+      });
+
+      // Initial calculation
+      calculateAndUpdate();
     </script>
   </body>
 </html>
